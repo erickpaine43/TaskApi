@@ -21,7 +21,7 @@ public class TasksController(ITaskService service) : ControllerBase
     public async Task<ActionResult<TaskResponse>> GetById(int id, CancellationToken ct)
     {
         var task = await service.GetAsync(id, ct);
-        return task is null ? NotFound() : Ok(task);
+        return task is null ? TaskNotFound(id) : Ok(task);
     }
 
     [HttpPost]
@@ -40,12 +40,18 @@ public class TasksController(ITaskService service) : ControllerBase
     public async Task<ActionResult<TaskResponse>> Update(int id, UpdateTaskRequest request, CancellationToken ct)
     {
         var task = await service.UpdateAsync(id, request, ct);
-        return task is null ? NotFound() : Ok(task);
+        return task is null ? TaskNotFound(id) : Ok(task);
     }
 
     [HttpDelete("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id, CancellationToken ct)
-        => await service.DeleteAsync(id, ct) ? NoContent() : NotFound();
+        => await service.DeleteAsync(id, ct) ? NoContent() : TaskNotFound(id);
+
+    // 404 en ProblemDetails con un mensaje que dice qué no se encontró.
+    private ObjectResult TaskNotFound(int id) =>
+        Problem(statusCode: StatusCodes.Status404NotFound,
+                title: "Task not found",
+                detail: $"No task exists with id {id}.");
 }

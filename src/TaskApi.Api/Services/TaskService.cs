@@ -53,7 +53,8 @@ public class TaskService(AppDbContext db, TimeProvider clock) : ITaskService
             Description = request.Description?.Trim(),
             Status = request.Status ?? TaskItemStatus.Pending,
             Assignee = request.Assignee.Trim(),
-            DueDate = ToUtc(request.DueDate),
+            // .Value es seguro: [Required] ya garantizó que llega (si no, 400 antes de entrar aquí).
+            DueDate = DateTimeUtc.Normalize(request.DueDate!.Value),
             CreatedAt = now,
             UpdatedAt = now
         };
@@ -70,9 +71,9 @@ public class TaskService(AppDbContext db, TimeProvider clock) : ITaskService
 
         task.Title = request.Title.Trim();
         task.Description = request.Description?.Trim();
-        task.Status = request.Status;
+        task.Status = request.Status!.Value;
         task.Assignee = request.Assignee.Trim();
-        task.DueDate = ToUtc(request.DueDate);
+        task.DueDate = DateTimeUtc.Normalize(request.DueDate!.Value);
         task.UpdatedAt = clock.GetUtcNow().UtcDateTime;
 
         await db.SaveChangesAsync(ct);
@@ -85,14 +86,6 @@ public class TaskService(AppDbContext db, TimeProvider clock) : ITaskService
         var deleted = await db.Tasks.Where(t => t.Id == id).ExecuteDeleteAsync(ct);
         return deleted > 0;
     }
-
-    // Todas las fechas se guardan en UTC. Si llegan sin zona horaria, se asumen UTC.
-    private static DateTime ToUtc(DateTime value) => value.Kind switch
-    {
-        DateTimeKind.Utc => value,
-        DateTimeKind.Local => value.ToUniversalTime(),
-        _ => DateTime.SpecifyKind(value, DateTimeKind.Utc)
-    };
 
     // SQLite devuelve las fechas sin "Kind"; las marcamos como UTC para que el JSON lleve la "Z".
     private static TaskResponse ToResponse(TaskItem t) => new(
