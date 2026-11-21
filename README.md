@@ -25,6 +25,8 @@ La API queda en `http://localhost:5228`. Al arrancar se aplican las migraciones 
 dotnet test
 ```
 
+Los tests también se ejecutan automáticamente en GitHub Actions en cada push y pull request ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
+
 ## Endpoints
 
 | Método | Ruta | Respuestas |
@@ -129,7 +131,7 @@ tests/TaskApi.Tests/
 - Más filtros y orden configurable (por fecha límite, tareas vencidas, búsqueda por título).
 - Interfaz visual de la documentación (Scalar o Swagger UI) sobre el OpenAPI que ya se genera.
 - Dockerfile y PostgreSQL con Testcontainers en los tests.
-- CI con GitHub Actions (build + tests en cada push).
+- Ampliar la CI: informe de cobertura de tests y análisis estático.
 - Logs estructurados, health checks y versionado de la API.
 - Mensajes de error en español (ahora son los que trae ASP.NET Core, en inglés).
 
