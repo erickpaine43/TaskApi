@@ -6,7 +6,8 @@ namespace TaskApi.Api.Controllers;
 
 [ApiController]
 [Route("api/tasks")]
-[Produces("application/json")]
+// Sin [Produces("application/json")]: forzaba ese Content-Type también en los errores,
+// que deben salir como "application/problem+json" (lo detectó un test).
 public class TasksController(ITaskService service) : ControllerBase
 {
     [HttpGet]
