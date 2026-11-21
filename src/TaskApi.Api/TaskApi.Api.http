@@ -1,1 +1,45 @@
-@TaskApi.Api_HostAddress = http://localhost:5228
+# Peticiones de ejemplo. Se ejecutan desde VS Code (extensión REST Client), Rider o Visual Studio.
+@host = http://localhost:5228
+
+### Crear una tarea
+POST {{host}}/api/tasks
+Content-Type: application/json
+
+{
+  "title": "Preparar la demo",
+  "description": "Diapositivas y datos de ejemplo",
+  "assignee": "ana",
+  "status": "InProgress",
+  "dueDate": "2026-12-15T17:00:00Z"
+}
+
+### Listar (con filtros y paginación, todos opcionales)
+GET {{host}}/api/tasks?status=InProgress&assignee=ana&page=1&pageSize=10
+
+### Ver una tarea
+GET {{host}}/api/tasks/1
+
+### Editar una tarea (PUT reemplaza todos los campos)
+PUT {{host}}/api/tasks/1
+Content-Type: application/json
+
+{
+  "title": "Preparar la demo",
+  "description": "Diapositivas listas",
+  "assignee": "ana",
+  "status": "Done",
+  "dueDate": "2026-12-15T17:00:00Z"
+}
+
+### Borrar una tarea
+DELETE {{host}}/api/tasks/1
+
+### Error de validación (400)
+POST {{host}}/api/tasks
+Content-Type: application/json
+
+{
+  "title": "",
+  "assignee": "ana",
+  "dueDate": "2020-01-01"
+}
