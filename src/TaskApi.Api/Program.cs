@@ -1,12 +1,19 @@
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using TaskApi.Api.Data;
+using TaskApi.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services
+    .AddControllers()
+    // Estados como texto en el JSON ("Pending", "InProgress", "Done") en vez de 0, 1, 2.
+    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddOpenApi();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("Default")));
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddScoped<ITaskService, TaskService>();
 
 var app = builder.Build();
 
