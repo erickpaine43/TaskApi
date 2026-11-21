@@ -14,7 +14,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         task.ToTable("Tasks");
         task.Property(t => t.Title).IsRequired().HasMaxLength(200);
         task.Property(t => t.Description).HasMaxLength(2000);
-        task.Property(t => t.Assignee).IsRequired().HasMaxLength(100);
+        // NOCASE: el filtro por responsable no distingue mayúsculas (solo ASCII en SQLite).
+        task.Property(t => t.Assignee).IsRequired().HasMaxLength(100).UseCollation("NOCASE");
 
         // Guardamos el enum como texto: la BD se lee sin tabla de equivalencias
         // y no se rompe si cambia el orden del enum.

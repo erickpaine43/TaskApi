@@ -10,9 +10,10 @@ namespace TaskApi.Api.Controllers;
 public class TasksController(ITaskService service) : ControllerBase
 {
     [HttpGet]
-    [ProducesResponseType<IReadOnlyList<TaskResponse>>(StatusCodes.Status200OK)]
-    public async Task<ActionResult<IReadOnlyList<TaskResponse>>> List(CancellationToken ct)
-        => Ok(await service.ListAsync(ct));
+    [ProducesResponseType<PagedResult<TaskResponse>>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<PagedResult<TaskResponse>>> List([FromQuery] TaskQuery query, CancellationToken ct)
+        => Ok(await service.ListAsync(query, ct));
 
     [HttpGet("{id:int}")]
     [ProducesResponseType<TaskResponse>(StatusCodes.Status200OK)]

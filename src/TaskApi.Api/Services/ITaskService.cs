@@ -4,7 +4,7 @@ namespace TaskApi.Api.Services;
 
 public interface ITaskService
 {
-    Task<IReadOnlyList<TaskResponse>> ListAsync(CancellationToken ct);
+    Task<PagedResult<TaskResponse>> ListAsync(TaskQuery query, CancellationToken ct);
     Task<TaskResponse?> GetAsync(int id, CancellationToken ct);
     Task<TaskResponse> CreateAsync(CreateTaskRequest request, CancellationToken ct);
 

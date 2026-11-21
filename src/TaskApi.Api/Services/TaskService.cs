@@ -8,15 +8,34 @@ namespace TaskApi.Api.Services;
 // TimeProvider se inyecta en vez de usar DateTime.UtcNow para poder fijar la hora en los tests.
 public class TaskService(AppDbContext db, TimeProvider clock) : ITaskService
 {
-    public async Task<IReadOnlyList<TaskResponse>> ListAsync(CancellationToken ct)
+    public async Task<PagedResult<TaskResponse>> ListAsync(TaskQuery query, CancellationToken ct)
     {
-        var tasks = await db.Tasks
-            .AsNoTracking()
+        // Se construye la consulta por partes: cada filtro solo se aplica si llega.
+        IQueryable<TaskItem> tasks = db.Tasks.AsNoTracking();
+
+        if (query.Status is { } status)
+            tasks = tasks.Where(t => t.Status == status);
+
+        if (!string.IsNullOrWhiteSpace(query.Assignee))
+        {
+            // La columna usa la intercalación NOCASE: "Ana" y "ana" coinciden y se usa el índice.
+            var assignee = query.Assignee.Trim();
+            tasks = tasks.Where(t => t.Assignee == assignee);
+        }
+
+        var totalCount = await tasks.CountAsync(ct);
+
+        // El orden debe ser estable (desempate por Id) para que las páginas no repitan ni salten filas.
+        var items = await tasks
             .OrderBy(t => t.DueDate)
             .ThenBy(t => t.Id)
+            .Skip((query.Page - 1) * query.PageSize)
+            .Take(query.PageSize)
             .ToListAsync(ct);
 
-        return tasks.Select(ToResponse).ToList();
+        var totalPages = (int)Math.Ceiling(totalCount / (double)query.PageSize);
+        return new PagedResult<TaskResponse>(
+            items.Select(ToResponse).ToList(), query.Page, query.PageSize, totalCount, totalPages);
     }
 
     public async Task<TaskResponse?> GetAsync(int id, CancellationToken ct)

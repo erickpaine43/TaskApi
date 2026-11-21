@@ -26,7 +26,8 @@ namespace TaskApi.Api.Migrations
                     b.Property<string>("Assignee")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .UseCollation("NOCASE");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
