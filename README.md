@@ -142,9 +142,14 @@ Usé **Claude (Claude Code)** como asistente durante toda la prueba.
 - Los primeros pasos los hice yo con sus instrucciones: instalar el SDK y crear la solución.
 - A partir del modelo de datos, le pedí que escribiera el código de cada paso bajo mi dirección, que lo probara (con `curl` y después con los tests) y que hiciera el commit al terminar cada paso, que yo revisaba antes de pasar al siguiente.
 
-**Qué acepté:**
-- La arquitectura (controlador fino, servicio, DTOs) y las decisiones descritas arriba.
-- Añadir más tests de los 3 mínimos para cubrir los casos de error, no solo el camino feliz.
+**Qué acepté y por qué:**
+- **SQLite**, porque quien revise la prueba puede ejecutarla con un solo comando, sin instalar ni configurar un servidor de base de datos.
+- **Controlador fino + servicio + DTOs**, porque separa HTTP de la lógica y evita exponer la entidad: el cliente no puede tocar `Id` ni las fechas de auditoría. Descarté añadir una capa de repositorio: para este tamaño, el `DbContext` ya cumple ese papel.
+- **`TimeProvider` inyectado**, porque sin él el test de "fecha no en el pasado" acabaría fallando según el día en que se ejecute.
+- **La regla de fecha solo al crear**, porque al editar hay que poder cerrar una tarea que ya venció.
+- **`NOCASE` en el responsable mediante una migración**, porque un filtro que distingue "Ana" de "ana" sería confuso para el usuario, y hacerlo en la base de datos permite seguir usando el índice. Acepté la limitación de que solo cubre ASCII.
+- **ProblemDetails para todos los errores**, porque es el estándar y el cliente siempre recibe el mismo formato.
+- **Tests de integración en lugar de unitarios con mocks**, porque prueban la API completa (validación, serialización, base de datos y migraciones) y siguen siendo rápidos. Y más tests de los 3 mínimos, para cubrir los casos de error y no solo el camino feliz.
 
 **Qué se corrigió por el camino:**
 - **Instalación del SDK:** el canal `10.0` de snap que me indicó no existe; lo instalé con `apt`.
@@ -155,9 +160,13 @@ Usé **Claude (Claude Code)** como asistente durante toda la prueba.
 - **Historial:** un commit mezclaba el arreglo anterior con el borrado del test de ejemplo; se rehízo (antes de publicar) para que cada commit tuviera solo lo suyo.
 - **Pendiente:** no conseguimos provocar un error 500 real en ejecución para comprobarlo (SQLite ya tenía el archivo abierto). La configuración es la estándar de ASP.NET Core.
 
-<!-- TODO Erick: añade aquí, con tus palabras, qué revisaste o cambiaste tú mismo y qué opinas del resultado. Borra este comentario antes de entregar. -->
+**Mi parte:**
+- Decidí no dejar que la IA instalara nada en mi equipo; el SDK y las herramientas los instalé yo.
+- Dirigí el trabajo paso a paso y revisé el resultado de cada paso (el código y las pruebas con curl o los tests) antes de pasar al siguiente.
+- Revisé el historial antes de publicarlo para que cada commit reflejara un paso real del avance.
+
+**Valoración:** la IA me ahorró sobre todo tiempo de escritura de código repetitivo (DTOs, configuración, tests). Lo que más valor aportó fueron las pruebas: varios errores (versiones de paquetes, mensajes de error que exponían detalles internos, el Content-Type de los errores) no se habrían visto solo leyendo el código. Todo lo que está en el repo lo entiendo y podría defenderlo o modificarlo.
 
 ## Tiempo invertido
 
-<!-- TODO Erick: pon el tiempo real total. Borra este comentario antes de entregar. -->
-Aproximadamente **X horas**.
+Unas **2 horas** en total. La mayor parte se fue en preparar el entorno: instalar .NET 10, las herramientas y los paquetes, con una conexión lenta. Escribir y probar el código con ayuda de la IA fue la parte más rápida.
